@@ -81,6 +81,17 @@
         - kubeadm 
         - kubectl
 
+  - name: Remove Coreutils 
+    apt: 
+      name: coreutils
+      state: absent
+
+  - name: Install Coreutils 
+    apt: 
+      name: coreutils 
+      state: present
+      update_cache: yes
+
   - name: Configure node ip
     lineinfile:
       path: /etc/default/kubelet
