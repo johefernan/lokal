@@ -12,6 +12,12 @@
         modprobe overlay
         modprobe br_netfilter
 
+  - name: Install Coreutils. Should be present, but didn't work.
+    apt: 
+      name: coreutils
+      state: present
+      update_cache: yes
+
   - name: Setup required sysctl params, these persist across reboots
     shell:
       cmd: |
@@ -56,7 +62,9 @@
       - none
 
   - name: Disable swap
-    command: swapoff -a
+    shell:
+      cmd: |
+        swapoff -a
     when: ansible_swaptotal_mb > 0
 
   - name: Add an apt signing key for Kubernetes
@@ -94,21 +102,27 @@
       state: restarted
 
   - name: Initialize the Kubernetes cluster using kubeadm
-    command: kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+    shell:
+      cmd: |
+        kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
 
   - name: Setup kubeconfig for vagrant user
     command: "{{ item }}"
     with_items:
-     - mkdir -p /home/vagrant/.kube
-     - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-     - chown vagrant:vagrant /home/vagrant/.kube/config
+      - mkdir -p /home/vagrant/.kube
+      - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+      - chown vagrant:vagrant /home/vagrant/.kube/config
 
-  - name: Install calico pod network
+  - name: Install Weave CNI
     become: false
-    command: kubectl create -f https://docs.projectcalico.org/v3.9/getting-started/kubernetes/installation/hosted/calico.yaml
+    shell:
+      cmd: |
+        kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
   - name: Generate join command
-    command: kubeadm token create --print-join-command
+    shell:
+      cmd: |
+        kubeadm token create --print-join-command
     register: join_command
 
   - name: Copy join command to local file
