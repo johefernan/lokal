@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#set -x
-
 echo -e "\e[39mVagrant...is it present?"
 
 if ! command -v vagrant &> /dev/null
@@ -33,10 +31,6 @@ else
     echo -e "\e[32mVagrant is present!"
 
 fi
-
-# echo -e "\e[39mPlugins..."
-
-# vagrant plugin install virtualbox ansible
 
 echo -e "\e[39mProvider..."
 
