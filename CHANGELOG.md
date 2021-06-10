@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Metrics (Prometheus/InfluxDB).
 - Ingress (Istio/Envoy).
 - Tracing (Kiali).
+- Dashboard and RBAC.
 
 ## [1.0.0] - 2020-12-29
 ### Changed
@@ -17,3 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2021-01-05
 ### Changed
 - Weave CNI instead of Calico.
+
+## [1.0.2] - 2021-06-10
+### Changed
+- Getting started with bootstrap.sh script.
