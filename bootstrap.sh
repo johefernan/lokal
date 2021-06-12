@@ -68,7 +68,7 @@ if ! command -v kubectl &> /dev/null; then
         if [ "$checksum_kctl" != "OK" ]; then
             exit 1
         fi
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && mkdir ~/.kube && rm kubectl.sha256
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && rm kubectl kubectl.sha256
     elif $darwin; then
         brew install kubectl
     else
@@ -81,5 +81,9 @@ else
 fi
 
 echo -e "\033[1;39mConfiguring..."
+
+if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
+
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
+
 echo -e "\033[1;32mDone!\nEnjoy your new cluster"
