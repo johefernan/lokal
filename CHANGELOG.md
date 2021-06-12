@@ -22,3 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.2] - 2021-06-10
 ### Changed
 - Getting started with bootstrap.sh script.
+
+## [1.1.0] - 2021-06-11
+### Changed
+- bootstrap.sh now with macOS support.

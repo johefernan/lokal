@@ -1,93 +1,85 @@
 #!/bin/bash
 
-echo -e "\e[39mVagrant...is it present?"
+darwin=false;
+linux=false;
 
-if ! command -v vagrant &> /dev/null
-then
+case "$(uname)" in
+    Linux*)
+        linux=true
+        ;;
+    Darwin*)
+        darwin=true
+        ;;
+esac
 
-    echo -e "\e[31mVagrant not present...\n\e[39mInstalling..."
-    
-    version_vg=$(curl -s https://releases.hashicorp.com/vagrant/ | grep href | grep -v '\.\.' | head -1 | awk -F/ '{ print $3 }')
-    
-    curl -SLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_linux_amd64.zip
-    
-    curl -sSLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_SHA256SUMS
-    
-    checksum_vg=$(sha256sum -c vagrant_${version_vg}_SHA256SUMS 2>&1 | grep OK | awk -F:' ' '{ print $2 }')
+echo -e "\033[1;39mVagrant...is it present?"
 
-    if [ "$checksum_vg" != "OK" ]
-    then
+if ! command -v vagrant &> /dev/null; then
+    echo -e "\033[1;31mVagrant not present...\n\033[1;39mInstalling..."
+    if $linux; then
+        version_vg=$(curl -s https://releases.hashicorp.com/vagrant/ | grep href | grep -v '\.\.' | head -1 | awk -F/ '{ print $3 }')
+        curl -SLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_linux_amd64.zip
+        curl -sSLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_SHA256SUMS
+        checksum_vg=$(sha256sum -c vagrant_${version_vg}_SHA256SUMS 2>&1 | grep OK | awk -F:' ' '{ print $2 }')
+        if [ "$checksum_vg" != "OK" ]; then
+            exit 1
+        fi
+        unzip vagrant_${version_vg}_linux_amd64.zip && rm vagrant_${version_vg}_linux_amd64.zip vagrant_${version_vg}_SHA256SUMS
+        sudo mv vagrant /usr/bin/vagrant
+    elif $darwin; then
+        brew install vagrant
+    else
+        echo -e "\033[1;31mOS not supported"
         exit 1
     fi
-
-    unzip vagrant_${version_vg}_linux_amd64.zip && rm vagrant_${version_vg}_linux_amd64.zip vagrant_${version_vg}_SHA256SUMS
-    
-    sudo mv vagrant /usr/bin/vagrant
-
-    echo -e "\e[32mDone!"
-
+    echo -e "\033[1;32mDone!"
 else
-    
-    echo -e "\e[32mVagrant is present!"
-
+    echo -e "\033[1;32mVagrant is present!"
 fi
 
-echo -e "\e[39mProvider..."
+echo -e "\033[1;39mProvider..."
 
-if ! command -v virtualbox &> /dev/null
-then
-
-    echo -e "\e[31mVirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox"
-
+if ! command -v virtualbox &> /dev/null; then
+    echo -e "\033[1;31mVirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox"
     exit 1
-
 else
-
-    echo -e "\e[32mVirtualBox is present!"
-
+    echo -e "\033[1;32mVirtualBox is present!"
 fi
 
-echo -e "\e[39mInitializing...\nPlease, be aware this could take several minutes."
+echo -e "\033[1;39mInitializing...\nPlease, be aware this could take several minutes."
 
 vagrant up --provider=virtualbox
 
 until [ $(vagrant status | sed 1,2d | head -n3 | grep -o 'running' | wc -l) == 3 ]
 do
-    sleep 3 && echo "...waiting for status: running"
+    sleep 3 && echo "...wait for status: running"
 done
 
-echo -e "\e[32mUp and Running!"
+echo -e "\033[1;32mUp and Running!"
 
-echo -e "\e[39mkubectl...is it present?"
+echo -e "\033[1;39mkubectl...is it present?"
 
-if ! command -v kubectl &> /dev/null
-then
-
-    echo -e "\e[31mkubectl not present\n\e[39mDownloading..."
-    
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    
-    curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
-    
-    checksum_kctl=$(echo "$(<kubectl.sha256) kubectl" | sha256sum --check | awk -F:' ' '{ print $2 }')
-
-    if [ "$checksum_kctl" != "OK" ]
-    then
+if ! command -v kubectl &> /dev/null; then
+    echo -e "\033[1;31mkubectl not present\n\033[1;39mInstalling..."
+    if $linux; then
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
+        checksum_kctl=$(echo "$(<kubectl.sha256) kubectl" | sha256sum --check | awk -F:' ' '{ print $2 }')
+        if [ "$checksum_kctl" != "OK" ]; then
+            exit 1
+        fi
+    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && mkdir ~/.kube && rm kubectl.sha256
+    elif $darwin; then
+        brew install kubectl
+    else
+        echo -e "\033[1;31mOS not supported"
         exit 1
     fi
-
-    echo -e "\e[39mInstalling kubectl"
-    
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl && mkdir ~/.kube && rm kubectl.sha256
-
+    echo -e "\033[1;32mDone!"
 else
-
-    echo -e "\e[32mkubectl is present!"
-
+    echo -e "\033[1;32mkubectl is present!"
 fi
 
-echo -e "\e[39mConfiguring..."
-
+echo -e "\033[1;39mConfiguring..."
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
-
-echo -e "\e[32mDone!\nEnjoy your new cluster"
+echo -e "\033[1;32mDone!\nEnjoy your new cluster"
