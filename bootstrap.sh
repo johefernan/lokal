@@ -86,4 +86,4 @@ if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
 
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
 
-echo -e "\033[1;32mDone!\nEnjoy your new cluster"
+echo -e "\033[1;32mDone!\nEnjoy your cluster"
