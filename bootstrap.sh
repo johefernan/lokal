@@ -86,4 +86,22 @@ if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
 
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
 
-echo -e "\033[1;32mDone!\nEnjoy your cluster"
+echo -e "\033[1;32mDone!\033[1;39m"
+
+while true; do
+    read -r -p "Enable Dashboard UI (y/n): " answer
+    case $answer in
+        [Yy]* )
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+            kubectl apply -f dashboard-adminuser.yaml
+            echo -e ""
+            kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
+            echo -e "\033[1;39m\nPlease, use the token above to log into Dashboard UI."
+            kubectl proxy &> /dev/null &
+            echo -e "\033[1;39mTo access Dashboard UI, click the next URL:"
+            echo -e "\033[1;33mhttp://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+            echo -e "\033[1;39mIn case of error, please open a new terminal session and type \033[1;33mkubectl proxy"; break;;
+        [Nn]* ) exit;;
+        * ) echo -e "\033[1;39mPlease, answer Y or N.";;
+    esac
+done
