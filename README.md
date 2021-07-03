@@ -1,7 +1,7 @@
 ![container](container.png)
 <div>Icons made by <a href="https://creativemarket.com/eucalyp" title="Eucalyp">Eucalyp</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div><br/>
 
-# Lokal-Cluster
+# Lokal
 Local Production-Class Kubernetes Cluster using Vagrant and Ansible.
 
 ## Reference
