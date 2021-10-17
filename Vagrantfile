@@ -1,4 +1,4 @@
-IMAGE_NAME = "bento/ubuntu-18.04"
+IMAGE_NAME = "bento/ubuntu-20.04"
 N = 2
 
 Vagrant.configure("2") do |config|
@@ -10,6 +10,7 @@ Vagrant.configure("2") do |config|
         master.vm.network "private_network", ip:"192.168.50.10"
         master.vm.hostname = "master"
         master.vm.provision "ansible_local" do |ansible|
+            ansible.compatibility_mode = "2.0"
             ansible.playbook = "kubernetes-setup/master-playbook.yml"
             ansible.extra_vars = {
                 node_ip:"192.168.50.10",
@@ -27,6 +28,7 @@ Vagrant.configure("2") do |config|
             node.vm.network "private_network", ip:"192.168.50.#{i + 10}"
             node.vm.hostname = "node-#{i}"
             node.vm.provision "ansible_local" do |ansible|
+                ansible.compatibility_mode = "2.0"
                 ansible.playbook = "kubernetes-setup/node-playbook.yml"
                 ansible.extra_vars = {
                     node_ip:"192.168.50.#{i + 10}",
