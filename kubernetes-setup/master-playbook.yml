@@ -5,7 +5,7 @@
   - name: Install and configure prerequisites
     shell:
       cmd: |
-        cat > /etc/modules-load.d/containerd.conf <<EOF
+        cat > /etc/modules-load.d/containerd.conf << EOF
         overlay
         br_netfilter
         EOF
@@ -13,7 +13,7 @@
         modprobe br_netfilter
 
   - name: Install Coreutils. Should be present, but didn't work.
-    apt: 
+    apt:
       name: coreutils
       state: present
       update_cache: yes
@@ -104,7 +104,7 @@
   - name: Initialize the Kubernetes cluster using kubeadm
     shell:
       cmd: |
-        kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name k8s-master --pod-network-cidr=192.168.0.0/16
+        kubeadm init --apiserver-advertise-address="192.168.50.10" --apiserver-cert-extra-sans="192.168.50.10"  --node-name master --pod-network-cidr=192.168.0.0/16
 
   - name: Setup kubeconfig for vagrant user
     command: "{{ item }}"

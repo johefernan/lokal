@@ -12,7 +12,7 @@ case "$(uname)" in
         ;;
 esac
 
-echo -e "\033[1;39mVagrant...is it present?"
+echo -e "\033[1;39mCheck if Vagrant is present..."
 
 if ! command -v vagrant &> /dev/null; then
     echo -e "\033[1;31mVagrant not present...\n\033[1;39mInstalling..."
@@ -29,21 +29,21 @@ if ! command -v vagrant &> /dev/null; then
     elif $darwin; then
         brew install vagrant
     else
-        echo -e "\033[1;31mOS not supported"
+        echo -e "\033[1;31mOS not supported."
         exit 1
     fi
-    echo -e "\033[1;32mDone!"
+    echo -e "\033[1;32mDone."
 else
-    echo -e "\033[1;32mVagrant is present!"
+    echo -e "\033[1;32mVagrant is present."
 fi
 
-echo -e "\033[1;39mProvider..."
+echo -e "\033[1;39mCheck if the provider (VirtualBox) is present..."
 
 if ! command -v virtualbox &> /dev/null; then
-    echo -e "\033[1;31mVirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox"
+    echo -e "\033[1;31mVirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox.\nAborting..."
     exit 1
 else
-    echo -e "\033[1;32mVirtualBox is present!"
+    echo -e "\033[1;32mVirtualBox is present."
 fi
 
 echo -e "\033[1;39mInitializing...\nPlease, be aware this could take several minutes."
@@ -52,12 +52,12 @@ vagrant up --provider=virtualbox
 
 until [ $(vagrant status | sed 1,2d | head -n3 | grep -o 'running' | wc -l) == 3 ]
 do
-    sleep 3 && echo "...wait for status: running"
+    sleep 3 && echo "...waiting for status from Vagrant"
 done
 
-echo -e "\033[1;32mUp and Running!"
+echo -e "\033[1;32mDone."
 
-echo -e "\033[1;39mkubectl...is it present?"
+echo -e "\033[1;39mCheck if kubectl is present..."
 
 if ! command -v kubectl &> /dev/null; then
     echo -e "\033[1;31mkubectl not present\n\033[1;39mInstalling..."
@@ -72,12 +72,12 @@ if ! command -v kubectl &> /dev/null; then
     elif $darwin; then
         brew install kubectl
     else
-        echo -e "\033[1;31mOS not supported"
+        echo -e "\033[1;31mOS not supported."
         exit 1
     fi
-    echo -e "\033[1;32mDone!"
+    echo -e "\033[1;32mDone."
 else
-    echo -e "\033[1;32mkubectl is present!"
+    echo -e "\033[1;32mkubectl is present."
 fi
 
 echo -e "\033[1;39mConfiguring..."
@@ -86,13 +86,13 @@ if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
 
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
 
-echo -e "\033[1;32mDone!\033[1;39m"
+echo -e "\033[1;32mDone.\033[1;39m"
 
 while true; do
-    read -r -p "Enable Dashboard UI (y/n): " answer
+    read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
     case $answer in
         [Yy]* )
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.2.0/aio/deploy/recommended.yaml
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml
             kubectl apply -f dashboard-adminuser.yaml
             echo -e ""
             kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
@@ -105,3 +105,5 @@ while true; do
         * ) echo -e "\033[1;39mPlease, answer Y or N.";;
     esac
 done
+
+echo -e "\033[1;32mAll set. Enjoy your orchestration!\033[1;39m"
