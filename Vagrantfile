@@ -7,13 +7,13 @@ Vagrant.configure("2") do |config|
 
     config.vm.define "master" do |master|
         master.vm.box = IMAGE_NAME
-        master.vm.network "private_network", ip:"192.168.50.10"
+        master.vm.network "private_network", ip:"192.168.56.10"
         master.vm.hostname = "master"
         master.vm.provision "ansible_local" do |ansible|
             ansible.compatibility_mode = "2.0"
             ansible.playbook = "kubernetes-setup/master-playbook.yml"
             ansible.extra_vars = {
-                node_ip:"192.168.50.10",
+                node_ip:"192.168.56.10",
             }
         end
         master.vm.provider "virtualbox" do |v|
@@ -25,13 +25,13 @@ Vagrant.configure("2") do |config|
     (1..N).each do |i|
         config.vm.define "node-#{i}" do |node|
             node.vm.box = IMAGE_NAME
-            node.vm.network "private_network", ip:"192.168.50.#{i + 10}"
+            node.vm.network "private_network", ip:"192.168.56.#{i + 10}"
             node.vm.hostname = "node-#{i}"
             node.vm.provision "ansible_local" do |ansible|
                 ansible.compatibility_mode = "2.0"
                 ansible.playbook = "kubernetes-setup/node-playbook.yml"
                 ansible.extra_vars = {
-                    node_ip:"192.168.50.#{i + 10}",
+                    node_ip:"192.168.56.#{i + 10}",
                 }
             end
             node.vm.provider "virtualbox" do |v|
