@@ -1,5 +1,10 @@
 #!/bin/bash
 
+BOLD="\033[1;39m"
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+
 darwin=false;
 linux=false;
 
@@ -12,10 +17,10 @@ case "$(uname)" in
         ;;
 esac
 
-echo -e "\033[1;39mCheck if Vagrant is present..."
+echo -e "${BOLD}Check if Vagrant is present...${BOLD}"
 
 if ! command -v vagrant &> /dev/null; then
-    echo -e "\033[1;31mVagrant not present...\n\033[1;39mInstalling..."
+    echo -e "${RED}Vagrant not present...\n${BOLD}Installing..."
     if $linux; then
         version_vg=$(curl -s https://releases.hashicorp.com/vagrant/ | grep href | grep -v '\.\.' | head -1 | awk -F/ '{ print $3 }')
         curl -SLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_linux_amd64.zip
@@ -29,24 +34,24 @@ if ! command -v vagrant &> /dev/null; then
     elif $darwin; then
         brew install vagrant
     else
-        echo -e "\033[1;31mOS not supported."
+        echo -e "${RED}OS not supported."
         exit 1
     fi
-    echo -e "\033[1;32mDone."
+    echo -e "${GREEN}Done."
 else
-    echo -e "\033[1;32mVagrant is present."
+    echo -e "${GREEN}Vagrant is present."
 fi
 
-echo -e "\033[1;39mCheck if the provider (VirtualBox) is present..."
+echo -e "${BOLD}Check if the provider (VirtualBox) is present...${BOLD}"
 
 if ! command -v virtualbox &> /dev/null; then
-    echo -e "\033[1;31mVirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox.\nAborting..."
+    echo -e "${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox.\nAborting..."
     exit 1
 else
-    echo -e "\033[1;32mVirtualBox is present."
+    echo -e "${GREEN}VirtualBox is present."
 fi
 
-echo -e "\033[1;39mInitializing...\nPlease, be aware this could take several minutes."
+echo -e "${BOLD}Initializing...\nPlease, be aware this could take several minutes."
 
 vagrant up --provider=virtualbox
 
@@ -55,12 +60,12 @@ do
     sleep 3 && echo "...waiting for status from Vagrant"
 done
 
-echo -e "\033[1;32mDone."
+echo -e "${GREEN}Done."
 
-echo -e "\033[1;39mCheck if kubectl is present..."
+echo -e "${BOLD}Check if kubectl is present..."
 
 if ! command -v kubectl &> /dev/null; then
-    echo -e "\033[1;31mkubectl not present\n\033[1;39mInstalling..."
+    echo -e "${RED}kubectl not present\n${BOLD}Installing..."
     if $linux; then
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
@@ -72,38 +77,38 @@ if ! command -v kubectl &> /dev/null; then
     elif $darwin; then
         brew install kubectl
     else
-        echo -e "\033[1;31mOS not supported."
+        echo -e "${RED}OS not supported."
         exit 1
     fi
-    echo -e "\033[1;32mDone."
+    echo -e "${GREEN}Done."
 else
-    echo -e "\033[1;32mkubectl is present."
+    echo -e "${GREEN}kubectl is present."
 fi
 
-echo -e "\033[1;39mConfiguring..."
+echo -e "${BOLD}Configuring..."
 
-if [ ! -d ~/.kube ]; then mkdir ~/.kube; fi
+if [ ! -d ~/.kube ]; then mkdir ~/.kube; else cp ~/.kube/config ~/.kube/config-$(date +"%Y-%m-%d-%H-%M-%S"); fi
 
 vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
 
-echo -e "\033[1;32mDone.\033[1;39m"
+echo -e "${GREEN}Done.${BOLD}"
 
 while true; do
     read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
     case $answer in
         [Yy]* )
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.4.0/aio/deploy/recommended.yaml
+            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
             kubectl apply -f dashboard-adminuser.yaml
             echo -e ""
             kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
-            echo -e "\033[1;39m\nPlease, use the token above to log into Dashboard UI."
+            echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
             kubectl proxy &> /dev/null &
-            echo -e "\033[1;39mTo access Dashboard UI, click the next URL:"
-            echo -e "\033[1;33mhttp://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-            echo -e "\033[1;39mIn case of error, please open a new terminal session and type \033[1;33mkubectl proxy"; break;;
+            echo -e "${BOLD}To access Dashboard UI, click the next URL:"
+            echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+            echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
         [Nn]* ) exit;;
-        * ) echo -e "\033[1;39mPlease, answer Y or N.";;
+        * ) echo -e "${BOLD}Please, answer Y or N.";;
     esac
 done
 
-echo -e "\033[1;32mAll set. Enjoy your orchestration!\033[1;39m"
+echo -e "${GREEN}All set. Enjoy your orchestration!${BOLD}"

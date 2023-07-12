@@ -31,3 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ubuntu 20.04
 - Dashboard v2.4.0
 - Ansible Compatibility "2.0"
+
+## [1.1.2] - 2023-06-29
+### Changed
+- Ubuntu 22.04
+- Dashboard v2.7.0
+- Weave CNI v2.8.1
