@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 BOLD="\033[1;39m"
 RED="\033[1;31m"
@@ -8,6 +8,14 @@ YELLOW="\033[1;33m"
 darwin=false;
 linux=false;
 
+return_help () {
+    # Display Help
+    echo "Usage: $0 [option...]"
+    echo "  -n    set number of nodes (default=1)."
+    echo "  -h    return this help."
+    exit 0
+}
+
 case "$(uname)" in
     Linux*)
         linux=true
@@ -16,6 +24,16 @@ case "$(uname)" in
         darwin=true
         ;;
 esac
+
+nodes=1
+
+while getopts n:h opt
+do
+    case "${opt}" in
+        n) nodes=${OPTARG};;
+        h) return_help;;
+    esac
+done
 
 echo -e "${BOLD}Check if Vagrant is present...${BOLD}"
 
@@ -53,7 +71,7 @@ fi
 
 echo -e "${BOLD}Initializing...\nPlease, be aware this could take several minutes."
 
-vagrant up --provider=virtualbox
+env NODES=$nodes vagrant up --provider=virtualbox
 
 until [ $(vagrant status | sed 1,2d | head -n3 | grep -o 'running' | wc -l) == 3 ]
 do

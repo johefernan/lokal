@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2023-06-29
 ### Changed
+- -n option argument to set number of nodes (default=1).
 - Ubuntu 22.04
 - Dashboard v2.7.0
 - Weave CNI v2.8.1
