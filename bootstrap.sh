@@ -9,9 +9,8 @@ darwin=false;
 linux=false;
 
 return_help () {
-    # Display Help
     echo "Usage: $0 [option...]"
-    echo "  -n    set number of nodes (default=1)."
+    echo "  -n    set number of nodes (default=1), choose 0 to disable nodes."
     echo "  -h    return this help."
     exit 0
 }
@@ -30,8 +29,10 @@ nodes=1
 while getopts n:h opt
 do
     case "${opt}" in
-        n) nodes=${OPTARG};;
-        h) return_help;;
+        n) nodes=${OPTARG}
+        ;;
+        h) return_help
+        ;;
     esac
 done
 
@@ -103,12 +104,11 @@ else
     echo -e "${GREEN}kubectl is present."
 fi
 
-echo -e "${BOLD}Configuring..."
-
-if [ ! -d ~/.kube ]; then mkdir ~/.kube; else cp ~/.kube/config ~/.kube/config-$(date +"%Y-%m-%d-%H-%M-%S"); fi
-
-vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ~/.kube/config
-
+echo -e "${BOLD}Setup kubeconfig..."
+DATE=$(date +"%F_%R")
+vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig-$DATE
+KUBECONFIG_PATH="$(pwd)/kubeconfig-$DATE"
+export KUBECONFIG=$KUBECONFIG_PATH
 echo -e "${GREEN}Done.${BOLD}"
 
 while true; do
