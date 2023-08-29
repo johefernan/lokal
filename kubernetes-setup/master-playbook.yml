@@ -13,9 +13,12 @@
           modprobe br_netfilter
     - name: Install Coreutils. Should be present, but didn't work.
       apt:
-        name: coreutils
+        name: "{{ dependencies }}"
         state: present
         update_cache: yes
+      vars:
+        dependencies:
+          - coreutils
     - name: Setup required sysctl params, these persist across reboots
       shell:
         cmd: |
@@ -41,10 +44,12 @@
         cmd: |
           mkdir -p /etc/containerd
           containerd config default > /etc/containerd/config.toml
-    - name: Restart containerd
-      shell:
-        cmd: |
-          systemctl restart containerd
+    - name: Restart and enable containerd
+      systemd: 
+        name: containerd
+        state: restarted
+        enabled: yes
+        daemon-reload: yes
     - name: Remove swapfile from /etc/fstab
       mount:
         name: "{{ item }}"

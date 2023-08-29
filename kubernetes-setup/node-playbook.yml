@@ -36,10 +36,12 @@
         cmd: |
           mkdir -p /etc/containerd
           containerd config default > /etc/containerd/config.toml
-    - name: Restart containerd
-      shell:
-        cmd: |
-          systemctl restart containerd
+    - name: Restart and enable containerd
+      systemd: 
+        name: containerd
+        state: restarted
+        enabled: yes
+        daemon-reload: yes
     - name: Remove swapfile from /etc/fstab
       mount:
         name: "{{ item }}"
