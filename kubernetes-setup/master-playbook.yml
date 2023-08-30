@@ -1,6 +1,10 @@
 ---
 - hosts: all
   become: true
+  vars:
+    RUNC_VERSION: "1.1.9"
+    CONTAINERD_VERSION: "1.7.5"
+    WEAVE_VERSION: "2.8.1"
   tasks:
     - name: Install and configure prerequisites
       shell:
@@ -13,11 +17,11 @@
           modprobe br_netfilter
     - name: Install Coreutils. Should be present, but didn't work.
       apt:
-        name: "{{ dependencies }}"
+        name: "{{ packages }}"
         state: present
         update_cache: yes
       vars:
-        dependencies:
+        packages:
           - coreutils
     - name: Setup required sysctl params, these persist across reboots
       shell:
@@ -31,14 +35,27 @@
       shell:
         cmd: |
           sysctl --system
-    - name: Install containerd
-      apt:
-        name: "{{ packages }}"
-        state: present
-        update_cache: yes
-      vars:
-        packages:
-          - containerd
+    - name: Download runc binary
+      get_url:
+        url: https://github.com/opencontainers/runc/releases/download/v{{ RUNC_VERSION }}/runc.amd64
+        dest: /tmp
+    - name: Install runc
+      command: "{{ item }} chdir=/tmp"
+      with_items:
+        - install -m 755 runc.amd64 /usr/local/sbin/runc
+    - name: Download containerd binary
+      get_url:
+        url: https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+        dest: /tmp
+    - name: Download untar containerd
+      unarchive:
+        src: /tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+        dest: /usr/local
+        remote_src: yes
+    - name: Download containerd.service
+      command: "{{ item }} chdir=/usr/lib/systemd/system"
+      with_items:
+        - curl -SLO "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
     - name: Configure containerd
       shell:
         cmd: |
@@ -104,16 +121,16 @@
         - mkdir -p /home/vagrant/.kube
         - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
         - chown vagrant:vagrant /home/vagrant/.kube/config
-    - name: Install Weave CNI
-      become: false
-      shell:
-        cmd: >
-          kubectl apply -f
-          "https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
-    - name: Generate join command
-      shell:
-        cmd: |
-          kubeadm token create --print-join-command
-      register: join_command
-    - name: Copy join command to local file
-      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+    #- name: Install Weave CNI
+    #  become: false
+    #  shell:
+    #    cmd: >
+    #      kubectl apply -f
+    #      "https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
+    #- name: Generate join command
+    #  shell:
+    #    cmd: |
+    #      kubeadm token create --print-join-command
+    #  register: join_command
+    #- name: Copy join command to local file
+    #  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
