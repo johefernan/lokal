@@ -2,9 +2,9 @@
 - hosts: all
   become: true
   vars:
-    RUNC_VERSION: "1.1.9"
-    CONTAINERD_VERSION: "1.7.5"
-    WEAVE_VERSION: "2.8.1"
+    runc_version: "1.1.9"
+    containerd_version: "1.7.5"
+    weave_version: "2.8.1"
   tasks:
     - name: Install and configure prerequisites
       shell:
@@ -37,7 +37,7 @@
           sysctl --system
     - name: Download runc binary
       get_url:
-        url: https://github.com/opencontainers/runc/releases/download/v{{ RUNC_VERSION }}/runc.amd64
+        url: https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64
         dest: /tmp
     - name: Install runc
       command: "{{ item }} chdir=/tmp"
@@ -61,6 +61,11 @@
         cmd: |
           mkdir -p /etc/containerd
           containerd config default > /etc/containerd/config.toml
+    - name: Enable SystemdCgroup driver https://bit.ly/3L9upJP
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
     - name: Restart and enable containerd
       systemd: 
         name: containerd
@@ -105,10 +110,11 @@
         line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
         create: yes
     - name: Restart kubelet
-      service:
+      systemd:
         name: kubelet
-        daemon_reload: yes
         state: restarted
+        enabled: yes
+        daemon_reload: yes
     - name: Initialize the Kubernetes cluster using kubeadm
       shell:
         cmd: >
@@ -121,16 +127,16 @@
         - mkdir -p /home/vagrant/.kube
         - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
         - chown vagrant:vagrant /home/vagrant/.kube/config
-    #- name: Install Weave CNI
-    #  become: false
-    #  shell:
-    #    cmd: >
-    #      kubectl apply -f
-    #      "https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml"
-    #- name: Generate join command
-    #  shell:
-    #    cmd: |
-    #      kubeadm token create --print-join-command
-    #  register: join_command
-    #- name: Copy join command to local file
-    #  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+    - name: Install Weave CNI
+      become: false
+      shell:
+        cmd: >
+          kubectl apply -f
+          "https://github.com/weaveworks/weave/releases/download/v{{ weave_version }}/weave-daemonset-k8s.yaml"
+    - name: Generate join command
+      shell:
+        cmd: |
+          kubeadm token create --print-join-command
+      register: join_command
+    - name: Copy join command to local file
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
