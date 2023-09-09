@@ -32,11 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dashboard v2.4.0
 - Ansible Compatibility "2.0"
 
-## [1.1.2] - 2023-08-28
+## [1.1.2] - 2023-09-09
 ### Changed
 - -n option argument to set or disable the number of nodes (default=1).
 - `KUBECONFIG` environment variable.
 - Ubuntu 22.04
-- Containerd v1.7.5
+- Containerd v1.7.5 (dependencies: runc)
 - Dashboard v2.7.0
 - Weave CNI v2.8.1
