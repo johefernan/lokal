@@ -107,7 +107,7 @@ else
 fi
 
 echo -e "${BOLD}Setup kubeconfig..."
-vagrant ssh master -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
+vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
 KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
 echo -e "${GREEN}Done.${BOLD}"
@@ -127,7 +127,7 @@ while true; do
                 echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
                 echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
             else
-                echo -e "${RED}To install Kubernetes Dashboard, add at least one extra node."
+                echo -e "${RED}To install the Kubernetes Dashboard, add at least one additional node."
                 exit 1
             fi;;
         [Nn]* ) exit;;

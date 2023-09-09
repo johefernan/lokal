@@ -119,7 +119,7 @@
       shell:
         cmd: >
           kubeadm init --apiserver-advertise-address="192.168.56.10"
-          --apiserver-cert-extra-sans="192.168.56.10" --node-name master
+          --apiserver-cert-extra-sans="192.168.56.10" --node-name control-plane
           --pod-network-cidr=192.168.0.0/16
     - name: Setup kubeconfig for vagrant user
       command: "{{ item }}"

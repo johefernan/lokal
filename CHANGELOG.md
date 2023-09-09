@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2020-12-29
 ### Changed
 - Containerd as CRI instead of Docker (yes, no Docker at all).
-- Since Kubernetes v1.20.1 minimum required memory is 1700 MB, master node memory was spinned up to 2048 MB.
+- Since Kubernetes v1.20.1 minimum required memory is 1700 MB, the control plane memory was spinned up to 2048 MB.
 
 ## [1.0.1] - 2021-01-05
 ### Changed
