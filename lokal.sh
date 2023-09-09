@@ -117,7 +117,7 @@ while true; do
     case $answer in
         [Yy]* )
             if $nodes -ge 1; then
-                kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+                kubectladd apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
                 kubectl apply -f dashboard-adminuser.yaml
                 echo -e ""
                 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
@@ -125,11 +125,10 @@ while true; do
                 kubectl proxy &> /dev/null &
                 echo -e "${BOLD}To access Dashboard UI, click the next URL:"
                 echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
+                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"
             else
                 echo -e "${RED}To install the Kubernetes Dashboard, add at least one additional node."
-                exit 1
-            fi;;
+            fi; break;;
         [Nn]* ) exit;;
         * ) echo -e "${BOLD}Please, answer Y or N.";;
     esac
