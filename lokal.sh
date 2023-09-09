@@ -129,12 +129,10 @@ while true; do
             else
                 echo -e "${RED}To install Kubernetes Dashboard, add at least one extra node."
                 exit 1
-            fi
+            fi;;
         [Nn]* ) exit;;
         * ) echo -e "${BOLD}Please, answer Y or N.";;
     esac
 done
-    echo -e "${RED} "
-
 
 echo -e "${GREEN}All set. Enjoy your orchestration!${BOLD}"
