@@ -76,7 +76,7 @@ echo -e "${BOLD}Initializing...\nPlease, be aware this could take several minute
 
 env NODES=$nodes vagrant up --provider=virtualbox
 
-until [ $(vagrant status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
+until [ $(vagrant global-status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
 do
     sleep 3 && echo "...waiting for status from Vagrant"
 done
@@ -116,18 +116,25 @@ while true; do
     read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
     case $answer in
         [Yy]* )
-            kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-            kubectl apply -f dashboard-adminuser.yaml
-            echo -e ""
-            kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"
-            echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
-            kubectl proxy &> /dev/null &
-            echo -e "${BOLD}To access Dashboard UI, click the next URL:"
-            echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-            echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
+            if $nodes -ge 1; then
+                kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+                kubectl apply -f dashboard-adminuser.yaml
+                echo -e ""
+                kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
+                echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
+                kubectl proxy &> /dev/null &
+                echo -e "${BOLD}To access Dashboard UI, click the next URL:"
+                echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
+            else
+                echo -e "${RED}To install Kubernetes Dashboard, add at least one extra node."
+                exit 1
+            fi
         [Nn]* ) exit;;
         * ) echo -e "${BOLD}Please, answer Y or N.";;
     esac
 done
+    echo -e "${RED} "
+
 
 echo -e "${GREEN}All set. Enjoy your orchestration!${BOLD}"

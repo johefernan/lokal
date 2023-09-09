@@ -1,11 +1,14 @@
 ---
 - hosts: all
   become: true
+  vars:
+    runc_version: "1.1.9"
+    containerd_version: "1.7.5"
   tasks:
     - name: Install and configure prerequisites
       shell:
         cmd: |
-          cat > /etc/modules-load.d/containerd.conf <<EOF
+          cat > /etc/modules-load.d/containerd.conf << EOF
           overlay
           br_netfilter
           EOF
@@ -23,19 +26,37 @@
       shell:
         cmd: |
           sysctl --system
-    - name: Install containerd
-      apt:
-        name: "{{ packages }}"
-        state: present
-        update_cache: yes
-      vars:
-        packages:
-          - containerd
+    - name: Download runc binary
+      get_url:
+        url: https://github.com/opencontainers/runc/releases/download/v{{ runc_version }}/runc.amd64
+        dest: /tmp
+    - name: Install runc
+      command: "{{ item }} chdir=/tmp"
+      with_items:
+        - install -m 755 runc.amd64 /usr/local/sbin/runc
+    - name: Download containerd binary
+      get_url:
+        url: https://github.com/containerd/containerd/releases/download/v{{ containerd_version }}/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+        dest: /tmp
+    - name: Download untar containerd
+      unarchive:
+        src: /tmp/containerd-{{ containerd_version }}-linux-amd64.tar.gz
+        dest: /usr/local
+        remote_src: yes
+    - name: Download containerd.service
+      command: "{{ item }} chdir=/usr/lib/systemd/system"
+      with_items:
+        - curl -SLO "https://raw.githubusercontent.com/containerd/containerd/main/containerd.service"
     - name: Configure containerd
       shell:
         cmd: |
           mkdir -p /etc/containerd
           containerd config default > /etc/containerd/config.toml
+    - name: Enable SystemdCgroup driver https://bit.ly/3L9upJP
+      replace:
+        path: /etc/containerd/config.toml
+        regexp: 'SystemdCgroup = false'
+        replace: 'SystemdCgroup = true'
     - name: Restart and enable containerd
       systemd: 
         name: containerd
@@ -51,7 +72,9 @@
         - swap
         - none
     - name: Disable swap
-      command: swapoff -a
+      shell:
+        cmd: |
+          swapoff -a
       when: ansible_swaptotal_mb > 0
     - name: Add an apt signing key for Kubernetes
       apt_key:
@@ -78,10 +101,11 @@
         line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
         create: yes
     - name: Restart kubelet
-      service:
+      systemd:
         name: kubelet
-        daemon_reload: yes
         state: restarted
+        enabled: yes
+        daemon_reload: yes
     - name: Copy the join command to server location
       copy:
         src: join-command
