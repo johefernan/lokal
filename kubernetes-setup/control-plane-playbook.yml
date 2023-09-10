@@ -15,14 +15,6 @@
           EOF
           modprobe overlay
           modprobe br_netfilter
-    #- name: Install Coreutils. Should be present, but didn't work.
-    #  apt:
-    #    name: "{{ packages }}"
-    #    state: present
-    #    update_cache: yes
-    #  vars:
-    #    packages:
-    #      - coreutils
     - name: Setup required sysctl params, these persist across reboots
       shell:
         cmd: |

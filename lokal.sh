@@ -10,9 +10,15 @@ YELLOW="\033[1;33m"
 darwin=false;
 linux=false;
 
+destroy () {
+    vagrant destroy
+    exit 0
+}
+
 return_help () {
     echo "Usage: $0 [option...]"
     echo "  -n    set number of nodes (default=1), choose 0 to disable nodes."
+    echo "  -d    use this flag to destroy the cluster."
     echo "  -h    return this help."
     exit 0
 }
@@ -28,10 +34,12 @@ esac
 
 nodes=1
 
-while getopts n:h opt
+while getopts n:dh opt
 do
     case "${opt}" in
         n) nodes=${OPTARG}
+        ;;
+        d) destroy
         ;;
         h) return_help
         ;;
@@ -76,7 +84,7 @@ echo -e "${BOLD}Initializing...\nPlease, be aware this could take several minute
 
 env NODES=$nodes vagrant up --provider=virtualbox
 
-until [ $(vagrant global-status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
+until [ $(vagrant status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
 do
     sleep 3 && echo "...waiting for status from Vagrant"
 done
@@ -112,26 +120,27 @@ KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
 echo -e "${GREEN}Done.${BOLD}"
 
-while true; do
-    read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
-    case $answer in
-        [Yy]* )
-            if $nodes -ge 1; then
-                kubectladd apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+if [[ $nodes -ge 1 ]]; then
+    while true; do
+        read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
+        case $answer in
+            [Yy]* )
+                kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
                 kubectl apply -f dashboard-adminuser.yaml
                 echo -e ""
                 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
                 echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
+                sleep 3
                 kubectl proxy &> /dev/null &
                 echo -e "${BOLD}To access Dashboard UI, click the next URL:"
                 echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"
-            else
-                echo -e "${RED}To install the Kubernetes Dashboard, add at least one additional node."
-            fi; break;;
-        [Nn]* ) exit;;
-        * ) echo -e "${BOLD}Please, answer Y or N.";;
-    esac
-done
+                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
+            [Nn]* ) break;;
+            * ) echo -e "${BOLD}Please, answer Y or N.";;
+        esac
+    done
+else
+    echo -e "${YELLOW}Skipping Kubernetes Dashboard. Add at least one additional node to install Kubernetes Dashboard."
+fi
 
 echo -e "${GREEN}All set. Enjoy your orchestration!${BOLD}"
