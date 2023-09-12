@@ -47,7 +47,7 @@ do
     esac
 done
 
-echo -e "🔍 ${BOLD}Check if Vagrant is present...${BOLD}"
+echo -e "🔍 ${BOLD}Check if Vagrant is present..."
 
 if ! command -v vagrant &> /dev/null; then
     echo -e "🫥 ${RED}Vagrant not present...\n${BOLD}Installing..."
@@ -72,7 +72,7 @@ else
     echo -e "👍 ${GREEN}Vagrant is present."
 fi
 
-echo -e "🔍 ${BOLD}Check if the provider (VirtualBox) is present...${BOLD}"
+echo -e "🔍 ${BOLD}Check if the provider (VirtualBox) is present..."
 
 if ! command -v virtualbox &> /dev/null; then
     echo -e "🫥 ${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox (https://www.virtualbox.org/).\nAborting..."
@@ -92,7 +92,7 @@ done
 
 echo -e "✅ ${GREEN}Done."
 
-echo -e "🔍 ${BOLD}Check if kubectl is present...${BOLD}"
+echo -e "🔍 ${BOLD}Check if kubectl is present..."
 
 if ! command -v kubectl &> /dev/null; then
     echo -e "🫥 ${RED}kubectl not present\n${BOLD}Installing..."
