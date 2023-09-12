@@ -12,6 +12,7 @@ linux=false;
 
 destroy () {
     vagrant destroy
+    echo -e "👋 ${GREEN}All gone. 'Til the next time!"
     exit 0
 }
 
@@ -46,10 +47,10 @@ do
     esac
 done
 
-echo -e "${BOLD}Check if Vagrant is present...${BOLD}"
+echo -e "🔍 ${BOLD}Check if Vagrant is present...${BOLD}"
 
 if ! command -v vagrant &> /dev/null; then
-    echo -e "${RED}Vagrant not present...\n${BOLD}Installing..."
+    echo -e "🫥 ${RED}Vagrant not present...\n${BOLD}Installing..."
     if $linux; then
         version_vg=$(curl -s https://releases.hashicorp.com/vagrant/ | grep href | grep -v '\.\.' | head -1 | awk -F/ '{ print $3 }')
         curl -SLO https://releases.hashicorp.com/vagrant/${version_vg}/vagrant_${version_vg}_linux_amd64.zip
@@ -63,24 +64,24 @@ if ! command -v vagrant &> /dev/null; then
     elif $darwin; then
         brew install vagrant
     else
-        echo -e "${RED}OS not supported."
+        echo -e "❌ ${RED}OS not supported."
         exit 1
     fi
-    echo -e "${GREEN}Done."
+    echo -e "✅ ${GREEN}Done."
 else
-    echo -e "${GREEN}Vagrant is present."
+    echo -e "👍 ${GREEN}Vagrant is present."
 fi
 
-echo -e "${BOLD}Check if the provider (VirtualBox) is present...${BOLD}"
+echo -e "🔍 ${BOLD}Check if the provider (VirtualBox) is present...${BOLD}"
 
 if ! command -v virtualbox &> /dev/null; then
-    echo -e "${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox.\nAborting..."
+    echo -e "🫥 ${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox (https://www.virtualbox.org/).\nAborting..."
     exit 1
 else
-    echo -e "${GREEN}VirtualBox is present."
+    echo -e "👍 ${GREEN}VirtualBox is present."
 fi
 
-echo -e "${BOLD}Initializing...\nPlease, be aware this could take several minutes."
+echo -e "🚀 ${BOLD}Initializing...\nPlease, be aware this could take several minutes."
 
 env NODES=$nodes vagrant up --provider=virtualbox
 
@@ -89,12 +90,12 @@ do
     sleep 3 && echo "...waiting for status from Vagrant"
 done
 
-echo -e "${GREEN}Done."
+echo -e "✅ ${GREEN}Done."
 
-echo -e "${BOLD}Check if kubectl is present..."
+echo -e "🔍 ${BOLD}Check if kubectl is present...${BOLD}"
 
 if ! command -v kubectl &> /dev/null; then
-    echo -e "${RED}kubectl not present\n${BOLD}Installing..."
+    echo -e "🫥 ${RED}kubectl not present\n${BOLD}Installing..."
     if $linux; then
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
@@ -106,19 +107,19 @@ if ! command -v kubectl &> /dev/null; then
     elif $darwin; then
         brew install kubectl
     else
-        echo -e "${RED}OS not supported."
+        echo -e "❌ ${RED}OS not supported."
         exit 1
     fi
-    echo -e "${GREEN}Done."
+    echo -e "✅ ${GREEN}Done."
 else
-    echo -e "${GREEN}kubectl is present."
+    echo -e "👍 ${GREEN}kubectl is present."
 fi
 
-echo -e "${BOLD}Setup kubeconfig..."
+echo -e "🚦 ${BOLD}Setup kubeconfig..."
 vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
 KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
-echo -e "${GREEN}Done.${BOLD}"
+echo -e "✅ ${GREEN}Done."
 
 if [[ $nodes -ge 1 ]]; then
     while true; do
@@ -143,4 +144,4 @@ else
     echo -e "${YELLOW}Skipping Kubernetes Dashboard. Add at least one additional node to install Kubernetes Dashboard."
 fi
 
-echo -e "${GREEN}All set. Enjoy your orchestration!${BOLD}"
+echo -e "✨ ${GREEN}All set. Enjoy your orchestration!"

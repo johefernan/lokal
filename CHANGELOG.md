@@ -34,7 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.1.2] - 2023-09-09
 ### Changed
+- Change script name to lokal.sh
 - -n option argument to set or disable the number of nodes (default=1).
+- -d feature flag to destroy the cluster.
 - `KUBECONFIG` environment variable.
 - Ubuntu 22.04
 - Containerd v1.7.5 (dependencies: runc)
