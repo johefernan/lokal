@@ -2,6 +2,7 @@
 
 set -e
 
+CLEAR="\033[1;0m"
 BOLD="\033[1;39m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
@@ -85,7 +86,7 @@ echo -e "🚀 ${BOLD}Initializing...\nPlease, be aware this could take several m
 
 env NODES=$nodes vagrant up --provider=virtualbox
 
-until [ $(vagrant status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
+until [ $(vagrant global-status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
 do
     sleep 3 && echo "...waiting for status from Vagrant"
 done
@@ -119,7 +120,7 @@ echo -e "🚦 ${BOLD}Setup kubeconfig..."
 vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
 KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
-echo -e "✅ ${GREEN}Done.${GREEN}"
+echo -e "✅ ${GREEN}Done.${CLEAR}"
 
 if [[ $nodes -ge 1 ]]; then
     while true; do
