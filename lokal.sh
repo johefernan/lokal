@@ -119,7 +119,7 @@ echo -e "🚦 ${BOLD}Setup kubeconfig..."
 vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
 KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
-echo -e "✅ ${GREEN}Done."
+echo -e "✅ ${GREEN}Done.${GREEN}"
 
 if [[ $nodes -ge 1 ]]; then
     while true; do
@@ -131,7 +131,6 @@ if [[ $nodes -ge 1 ]]; then
                 echo -e ""
                 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
                 echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
-                sleep 3
                 kubectl proxy &> /dev/null &
                 echo -e "${BOLD}To access Dashboard UI, click the next URL:"
                 echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
