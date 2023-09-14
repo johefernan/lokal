@@ -13,10 +13,8 @@ This project was made following [Kubernetes Setup Using Ansible and Vagrant](htt
 
 ### <span style="color:yellow">Disclaimer</span>
 - This cluster is for learning and practical purposes only; be aware that it is not recommended for actual production workloads.
-- `dashboard-adminuser.yaml` creates a sample user using Service Account mechanism and grants this user admin permissions. Granting admin privileges to Dashboard's Service Account might be a security risk. Please refer to [Creating sample user](https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md) documentation for any concern.
-
-### <span style="color:red">Warning</span>
-- If you have any other cluster definition in `~/.kube/config`, please make a copy of your current `~/.kube/config` file.
+- `dashboard-adminuser.yaml` creates a sample user using Service Account mechanism and grants this user admin permissions. Granting admin privileges to Kubernetes Dashboard's Service Account might be a security risk. Please refer to [Creating sample user](https://github.com/kubernetes/dashboard/blob/master/docs/user/access-control/creating-sample-user.md) documentation for any concern.
+- To install the Kubernetes Dashboard, you must to add at least one additional node.
 
 ## Getting Started
-1. Run bootstrap.sh
+1. Run lokal.sh

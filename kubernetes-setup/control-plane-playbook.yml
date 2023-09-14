@@ -4,6 +4,7 @@
   vars:
     runc_version: "1.1.9"
     containerd_version: "1.7.5"
+    weave_version: "2.8.1"
   tasks:
     - name: Install and configure prerequisites
       shell:
@@ -106,10 +107,28 @@
         state: restarted
         enabled: yes
         daemon_reload: yes
-    - name: Copy the join command to server location
-      copy:
-        src: join-command
-        dest: /tmp/join-command.sh
-        mode: 777
-    - name: Join the node to cluster
-      command: sh /tmp/join-command.sh
+    - name: Initialize the Kubernetes cluster using kubeadm
+      shell:
+        cmd: >
+          kubeadm init --apiserver-advertise-address="192.168.56.10"
+          --apiserver-cert-extra-sans="192.168.56.10" --node-name control-plane
+          --pod-network-cidr=192.168.0.0/16
+    - name: Setup kubeconfig for vagrant user
+      command: "{{ item }}"
+      with_items:
+        - mkdir -p /home/vagrant/.kube
+        - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+        - chown vagrant:vagrant /home/vagrant/.kube/config
+    - name: Install Weave CNI
+      become: false
+      shell:
+        cmd: >
+          kubectl apply -f
+          "https://github.com/weaveworks/weave/releases/download/v{{ weave_version }}/weave-daemonset-k8s.yaml"
+    - name: Generate join command
+      shell:
+        cmd: |
+          kubeadm token create --print-join-command
+      register: join_command
+    - name: Copy join command to local file
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"

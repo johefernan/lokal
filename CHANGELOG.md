@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2020-12-29
 ### Changed
 - Containerd as CRI instead of Docker (yes, no Docker at all).
-- Since Kubernetes v1.20.1 minimum required memory is 1700 MB, master node memory was spinned up to 2048 MB.
+- Since Kubernetes v1.20.1 minimum required memory is 1700 MB, the control plane memory was spinned up to 2048 MB.
 
 ## [1.0.1] - 2021-01-05
 ### Changed
@@ -31,3 +31,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ubuntu 20.04
 - Dashboard v2.4.0
 - Ansible Compatibility "2.0"
+
+## [1.1.2] - 2023-09-14
+### Changed
+- Change script name to lokal.sh
+- -n option argument to set or disable the number of nodes (default=1).
+- -d feature flag to destroy the cluster.
+- `KUBECONFIG` environment variable.
+- Ubuntu 22.04
+- Containerd v1.7.5 (dependencies: runc)
+- Dashboard v2.7.0
+- Weave CNI v2.8.1
