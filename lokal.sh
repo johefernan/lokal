@@ -129,13 +129,15 @@ if [[ $nodes -ge 1 ]]; then
             [Yy]* )
                 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
                 kubectl apply -f dashboard-adminuser.yaml
-                echo -e ""
+                echo -e "${BOLD}\n"
                 kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
-                echo -e "${BOLD}\nPlease, use the token above to log into Dashboard UI."
-                kubectl proxy &> /dev/null &
-                echo -e "${BOLD}To access Dashboard UI, click the next URL:"
-                echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
-                echo -e "${BOLD}In case of error, please open a new terminal session and type ${YELLOW}kubectl proxy"; break;;
+                echo -e "${CLEAN}\n"
+                echo -e "${BOLD}\n📋 Please, save the token above to login into the Dashboard UI."
+                echo -e "${CLEAN}\n"
+                echo -e "To access to the Dashboard UI, run:"
+                echo -e "  kubectl proxy"
+                echo -e "${BOLD}Then, go to the next URL:"
+                echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"; break;;
             [Nn]* ) break;;
             * ) echo -e "${BOLD}Please, answer Y or N.";;
         esac
