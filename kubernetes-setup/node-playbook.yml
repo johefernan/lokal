@@ -2,9 +2,76 @@
 - hosts: all
   become: true
   vars:
-    runc_version: "1.1.9"
-    containerd_version: "1.7.5"
+    runc_version: "1.1.13"
+    containerd_version: "1.7.14"
   tasks:
+    - name: Update all packages to the latest version
+      apt:
+        upgrade: dist
+        update_cache: yes
+      tags:
+        - with-hardening
+    - name: Install unattended-upgrades package
+      apt:
+        name: unattended-upgrades
+        state: present
+      tags:
+        - with-hardening
+    - name: Enable automatic security updates
+      lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        line: 'APT::Periodic::Unattended-Upgrade "1";'
+        create: yes
+      tags:
+        - with-hardening
+    - name: Ensure ufw (firewall) is installed
+      apt:
+        name: ufw
+        state: present
+      tags:
+        - with-hardening
+    - name: Allow SSH through firewall
+      ufw:
+        rule: allow
+        port: ssh
+      tags:
+        - with-hardening
+    - name: Allow Kubelet API
+      ufw:
+        rule: allow
+        port: 10250
+        proto: tcp
+      tags:
+        - with-hardening
+    - name: Enable firewall
+      ufw:
+        state: enabled
+      tags:
+        - with-hardening
+    - name: Ensure SSH server config is secure
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^{{ item.name }} '
+        line: '{{ item.name }} {{ item.value }}'
+      with_items:
+        - { name: 'PermitRootLogin', value: 'no' }
+        - { name: 'PasswordAuthentication', value: 'no' }
+        - { name: 'AllowUsers', value: 'vagrant' }
+      tags:
+        - with-hardening
+    - name: Restart SSH service
+      systemd:
+        name: ssh
+        state: restarted
+      tags:
+        - with-hardening
+    - name: Ensure password hashes are stored securely
+      lineinfile:
+        path: /etc/login.defs
+        regexp: '^ENCRYPT_METHOD'
+        line: 'ENCRYPT_METHOD SHA512'
+      tags:
+        - with-hardening
     - name: Install and configure prerequisites
       shell:
         cmd: |
@@ -78,11 +145,12 @@
       when: ansible_swaptotal_mb > 0
     - name: Add an apt signing key for Kubernetes
       apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
         state: present
+        keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     - name: Adding apt repository for Kubernetes
       apt_repository:
-        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
         state: present
         filename: kubernetes.list
     - name: Install Kubernetes binaries

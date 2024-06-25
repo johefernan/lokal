@@ -19,9 +19,10 @@ destroy () {
 
 return_help () {
     echo "Usage: $0 [option...]"
-    echo "  -n    set number of nodes (default=1), choose 0 to disable nodes."
-    echo "  -d    use this flag to destroy the cluster."
-    echo "  -h    return this help."
+    echo "  -n | --nodes      set number of nodes (default=1), choose 0 to disable nodes."
+    echo "  -d | --destroy    use this flag to destroy the cluster."
+    echo "  -h | --help       return this help."
+    echo "  -i | --insecure   bootstrap the cluster without hardening."
     exit 0
 }
 
@@ -35,16 +36,26 @@ case "$(uname)" in
 esac
 
 nodes=1
+insecure=false
+args=$(getopt -o n:dhi --long nodes:,destroy,insecure -- "$@")
 
-while getopts n:dh opt
-do
-    case "${opt}" in
-        n) nodes=${OPTARG}
-        ;;
-        d) destroy
-        ;;
-        h) return_help
-        ;;
+while true; do
+    case "$1" in
+        -n | --nodes) 
+            nodes=$2
+            shift 2
+            ;;
+        -d | --destroy)
+            destroy
+            ;;
+        -h | --help)
+            return_help
+            ;;
+        -i | --insecure)
+            insecure=true
+            break
+            ;;
+        *) break
     esac
 done
 
@@ -84,7 +95,7 @@ fi
 
 echo -e "🚀 ${BOLD}Initializing...\nPlease, be aware this could take several minutes."
 
-env NODES=$nodes vagrant up --provider=virtualbox
+env NODES=$nodes INSECURE=$insecure vagrant up --provider=virtualbox
 
 until [ $(vagrant global-status | sed 1,2d | head -n$(expr 1 + $nodes) | grep -o 'running' | wc -l) == $(expr 1 + $nodes) ]
 do
@@ -121,29 +132,5 @@ vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeco
 KUBECONFIG_PATH="$(pwd)/kubeconfig"
 export KUBECONFIG=$KUBECONFIG_PATH
 echo -e "✅ ${GREEN}Done.${CLEAR}"
-
-if [[ $nodes -ge 1 ]]; then
-    while true; do
-        read -r -p "Do you want to enable Kubernetes Dashboard? (y/n): " answer
-        case $answer in
-            [Yy]* )
-                kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-                kubectl apply -f dashboard-adminuser.yaml
-                echo -e ""
-                kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
-                echo -e ""
-                echo -e "${BOLD}\n📋 Please, save the token above to login into the Dashboard UI.${CLEAR}"
-                echo -e ""
-                echo -e "To access to the Dashboard UI, run:"
-                echo -e "  kubectl proxy"
-                echo -e "${BOLD}\nThen, go to the next URL:"
-                echo -e "${YELLOW}http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"; break;;
-            [Nn]* ) break;;
-            * ) echo -e "${BOLD}Please, answer Y or N.";;
-        esac
-    done
-else
-    echo -e "${YELLOW}Skipping Kubernetes Dashboard. Add at least one additional node to install the dashboard."
-fi
 
 echo -e "✨ ${GREEN}All set. Enjoy your orchestration!"
