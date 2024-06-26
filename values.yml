@@ -1,0 +1,7 @@
+resources:
+  cp:
+    cpu: 2
+    mem: 2048
+  nodes:
+    cpu: 2
+    mem: 2048
