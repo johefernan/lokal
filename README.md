@@ -11,5 +11,9 @@ This project was made following [Kubernetes Setup Using Ansible and Vagrant](htt
 - VirtualBox must to be present on your system. Vagrant will seek for a version of Oracle VirtualBox in your localhost to use it as a default [provider](https://www.vagrantup.com/docs/providers).
 - Additionally for macOS users, install [Homebrew](https://brew.sh/index) previously.
 
+### <span style="color:yellow">Disclaimer</span>
+- This cluster is for learning and practical purposes only; be aware that it is not recommended for actual production workloads.
+- Vagrant provider VirtualBox will not work with Apple Silicon processors.
+
 ## Getting Started
 1. Run lokal.sh
