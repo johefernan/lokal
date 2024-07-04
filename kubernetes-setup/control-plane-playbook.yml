@@ -5,6 +5,7 @@
     runc_version: "1.1.13"
     containerd_version: "1.7.14"
     calico_version: "3.28.0"
+    network_cidr: "172.16.0.0/12"
   tasks:
     - name: Update all packages to the latest version
       apt:
@@ -146,12 +147,12 @@
       when: ansible_swaptotal_mb > 0
     - name: Add an apt signing key for Kubernetes
       apt_key:
-        url: https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key
+        url: https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key
         state: present
         keyring: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     - name: Adding apt repository for Kubernetes
       apt_repository:
-        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /
+        repo: deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /
         state: present
         filename: kubernetes.list
     - name: Install Kubernetes binaries
@@ -180,7 +181,7 @@
         cmd: >
           kubeadm init --apiserver-advertise-address="192.168.56.10"
           --apiserver-cert-extra-sans="192.168.56.10" --node-name control-plane
-          --pod-network-cidr=192.168.0.0/16
+          --pod-network-cidr={{ network_cidr }}
     - name: Setup kubeconfig for vagrant user
       command: "{{ item }}"
       with_items:
@@ -192,7 +193,7 @@
       shell:
         cmd: |
           kubectl create -f "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/tigera-operator.yaml"
-          kubectl create -f "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/custom-resources.yaml"
+          curl "https://raw.githubusercontent.com/projectcalico/calico/v{{ calico_version }}/manifests/custom-resources.yaml" | sed "s|192.168.0.0/16|{{ network_cidr }}|g" | kubectl apply -f -
     - name: Generate join command
       shell:
         cmd: |
