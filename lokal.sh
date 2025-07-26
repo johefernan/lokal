@@ -137,7 +137,7 @@ if ! command -v kubectl &> /dev/null; then
     printf "✅ ${GREEN}Done.\n"
 else
     printf "👍 ${GREEN}kubectl is present.\n"
-fiunset LD_LIBRARY_PATH
+fi
 
 printf "🚦 ${BOLD}Setup kubeconfig...\n"
 vagrant ssh control-plane -- -t 'sudo cat /etc/kubernetes/admin.conf' > ./kubeconfig
