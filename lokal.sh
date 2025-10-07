@@ -17,12 +17,12 @@ destroy() {
     exit 0
 }
 
-return_help() {
+return_help () {
     printf "Usage: $0 [options...]
     -n | --nodes      set number of nodes (default=1), choose 0 to disable nodes.
     -d | --destroy    use this flag to destroy the cluster.
     -h | --help       return this help.
-    -i | --insecure   bootstrap the cluster without hardening.\n"
+    -i | --insecure   bootstrap the cluster without hardening."
     exit 0
 }
 
@@ -59,27 +59,6 @@ while true; do
     esac
 done
 
-printf "🔍 ${BOLD}Check if VirtualBox is present...\n"
-
-if ! command -v virtualbox &> /dev/null; then
-    printf "🫥 ${RED}VirtualBox not present...\n${BOLD}Installing...\n"
-    if $linux; then
-        version_vb=$(curl -s https://download.virtualbox.org/virtualbox/LATEST.TXT)
-        vb_bin=$(curl -s https://download.virtualbox.org/virtualbox/${version_vb} | grep -oP VirtualBox-${version_vb}-[0-9]+-Linux_amd64\.run | sort -V | tail -1)
-        curl -SLO https://download.virtualbox.org/virtualbox/${version_vb}/${vb_bin} && chmod +x ${vb_bin}
-        ( sudo ./${vb_bin} --nox11 --quiet --accept )
-        rm -f ./${vb_bin}
-    elif $darwin; then
-        brew install --cask virtualbox
-    else
-        printf "❌ ${RED}OS not supported.\n"
-        exit 1
-    fi
-    printf "✅ ${GREEN}Done.\n"
-else
-    printf "👍 ${GREEN}VirtualBox is present.\n"
-fi
-         
 printf "🔍 ${BOLD}Check if Vagrant is present...\n"
 
 if ! command -v vagrant &> /dev/null; then
@@ -103,6 +82,15 @@ if ! command -v vagrant &> /dev/null; then
     printf "✅ ${GREEN}Done.\n"
 else
     printf "👍 ${GREEN}Vagrant is present.\n"
+fi
+
+printf "🔍 ${BOLD}Check if the provider (VirtualBox) is present...\n"
+
+if ! command -v virtualbox &> /dev/null; then
+    printf "🫥 ${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox (https://www.virtualbox.org/).\nAborting...\n"
+    exit 1
+else
+    printf "👍 ${GREEN}VirtualBox is present.\n"
 fi
 
 printf "🚀 ${BOLD}Initializing...\nPlease, be aware this could take several minutes.\n"
