@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ingress (Istio/Envoy).
 - Tracing (Kiali).
 
+## [1.2.0] - 2025-10-07
+### Changed
+- Install VirtualBox if not present (Linux)
+- Install Kubernetes 1.30
+
 ## [1.1.3] - 2024-06-25
 ### Changed
 - Add skippable hardening (default enabled).
