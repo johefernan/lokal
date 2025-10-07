@@ -62,12 +62,24 @@ done
 printf "🔍 ${BOLD}Check if VirtualBox is present...\n"
 
 if ! command -v virtualbox &> /dev/null; then
-    printf "🫥 ${RED}VirtualBox not present...\nPlease, install a stable version of Oracle VirtualBox (https://www.virtualbox.org/).\nAborting..."
-    exit 1
+    printf "🫥 ${RED}VirtualBox not present...\n${BOLD}Installing...\n"
+    if $linux; then
+        version_vb=$(curl -s https://download.virtualbox.org/virtualbox/LATEST.TXT)
+        vb_bin=$(curl -s https://download.virtualbox.org/virtualbox/${version_vb} | grep -oP VirtualBox-${version_vb}-[0-9]+-Linux_amd64\.run | sort -V | tail -1)
+        curl -SLO https://download.virtualbox.org/virtualbox/${version_vb}/${vb_bin} && chmod +x ${vb_bin}
+        ( sudo ./${vb_bin} --nox11 --quiet --accept )
+        rm -f ./${vb_bin}
+    elif $darwin; then
+        brew install --cask virtualbox
+    else
+        printf "❌ ${RED}OS not supported.\n"
+        exit 1
+    fi
+    printf "✅ ${GREEN}Done.\n"
 else
     printf "👍 ${GREEN}VirtualBox is present.\n"
 fi
-
+         
 printf "🔍 ${BOLD}Check if Vagrant is present...\n"
 
 if ! command -v vagrant &> /dev/null; then
