@@ -23,6 +23,7 @@ return_help() {
     -d | --destroy    use this flag to destroy the cluster.
     -h | --help       return this help.
     -i | --insecure   bootstrap the cluster without hardening."
+
     exit 0
 }
 
