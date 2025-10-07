@@ -18,7 +18,7 @@ destroy() {
 }
 
 return_help() {
-    printf "Usage: $0 [options...]\n
+    printf "Usage: $0 [options...]
     -n | --nodes      set number of nodes (default=1), choose 0 to disable nodes.
     -d | --destroy    use this flag to destroy the cluster.
     -h | --help       return this help.
