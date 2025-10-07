@@ -18,13 +18,11 @@ destroy() {
 }
 
 return_help() {
-    printf "Usage: $0 [options...]
-    \n
+    printf "Usage: $0 [options...]\n
     -n | --nodes      set number of nodes (default=1), choose 0 to disable nodes.
     -d | --destroy    use this flag to destroy the cluster.
     -h | --help       return this help.
-    -i | --insecure   bootstrap the cluster without hardening.
-    \n"
+    -i | --insecure   bootstrap the cluster without hardening.\n"
     exit 0
 }
 
