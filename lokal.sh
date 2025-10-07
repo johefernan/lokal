@@ -22,8 +22,8 @@ return_help() {
     -n | --nodes      set number of nodes (default=1), choose 0 to disable nodes.
     -d | --destroy    use this flag to destroy the cluster.
     -h | --help       return this help.
-    -i | --insecure   bootstrap the cluster without hardening."
-    printf
+    -i | --insecure   bootstrap the cluster without hardening.
+    \n"
     exit 0
 }
 
